@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ FOOTBALL HUB</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050905; --bg2:#0a110a; --bg3:#0e160e;
+  --green:#00e676; --green-dim:rgba(0,230,118,0.08);
+  --green-glow:0 0 24px rgba(0,230,118,0.25);
+  --text:#e8f5e9; --text2:#81c784; --text3:#4a7c4e;
+  --accent:#b9f6ca; --red:#ff5252; --yellow:#ffd740;
+  --blue:#448aff; --border:#162016;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,230,118,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,230,118,0.02) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+
+header{position:sticky;top:0;z-index:200;background:rgba(5,9,5,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:4px;color:var(--green);text-shadow:var(--green-glow);display:flex;align-items:center;gap:8px}
+.live-dot{width:8px;height:8px;background:var(--red);border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.clock{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text3)}
+
+nav{display:flex;gap:2px;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:56px;z-index:199}
+nav::-webkit-scrollbar{display:none}
+.tab{padding:7px 16px;border-radius:6px;font-size:0.85rem;font-weight:700;letter-spacing:1px;cursor:pointer;border:1px solid transparent;transition:all 0.2s;white-space:nowrap;color:var(--text3);background:transparent;text-transform:uppercase}
+.tab:hover{color:var(--green);border-color:var(--border)}
+.tab.active{background:var(--green-dim);color:var(--green);border-color:var(--green);box-shadow:var(--green-glow)}
+
+main{max-width:900px;margin:0 auto;padding:16px;position:relative;z-index:1}
+.section{display:none}
+.section.active{display:block;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--green);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent)}
+
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pill{padding:5px 12px;border-radius:16px;font-size:0.78rem;font-weight:700;cursor:pointer;border:1px solid var(--border);color:var(--text3);transition:all 0.2s;white-space:nowrap}
+.pill:hover,.pill.active{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text3);letter-spacing:2px}
+
+.error-box{background:rgba(255,82,82,0.08);border:1px solid rgba(255,82,82,0.3);border-radius:10px;padding:20px;text-align:center;color:var(--red);font-size:0.9rem}
+
+.match-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.match-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border)}
+.match-card.live::before{background:var(--red)}
+.match-card.finished::before{background:var(--text3)}
+.match-card.upcoming::before{background:var(--green)}
+.match-card:hover{border-color:#1b5e20;background:var(--bg3);transform:translateX(2px)}
+
+.team-side{display:flex;align-items:center;gap:10px}
+.team-side.away{flex-direction:row-reverse}
+.tlogo{width:36px;height:36px;object-fit:contain;border-radius:4px;flex-shrink:0;background:var(--bg3);padding:3px}
+.tlogo-fb{width:36px;height:36px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;color:var(--text2);font-weight:700}
+.tname{font-weight:700;font-size:0.92rem;line-height:1.2}
+.league-tag{position:absolute;top:6px;right:10px;font-size:0.6rem;color:var(--text3);font-family:'JetBrains Mono',monospace;letter-spacing:1px}
+
+.score-mid{text-align:center;min-width:90px}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:8px;color:var(--accent);line-height:1}
+.mbadge{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:2px;margin-top:3px;font-weight:700}
+.mbadge.live{color:var(--red);animation:blink 1.2s infinite}
+.mbadge.finished{color:var(--text3)}
+.mbadge.upcoming{color:var(--green)}
+
+.standings-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.st-header{display:grid;grid-template-columns:30px 1fr 30px 30px 30px 44px 44px;padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:0.65rem;letter-spacing:2px;color:var(--text3);text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.st-row{display:grid;grid-template-columns:30px 1fr 30px 30px 30px 44px 44px;padding:10px 14px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 0.15s}
+.st-row:last-child{border-bottom:none}
+.st-row:hover{background:var(--bg3)}
+.st-row.cl{border-left:3px solid var(--green)}
+.st-row.el{border-left:3px solid var(--blue)}
+.st-row.conf{border-left:3px solid var(--yellow)}
+.st-row.rel{border-left:3px solid var(--red)}
+.st-pos{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--text3);font-weight:700}
+.st-team{display:flex;align-items:center;gap:8px}
+.st-logo{width:22px;height:22px;object-fit:contain}
+.st-name{font-weight:600;font-size:0.88rem}
+.st-stat{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--text2);text-align:center}
+.st-pts{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--green);text-align:center}
+
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.player-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pcard-head{background:var(--bg3);padding:8px 14px;font-size:0.65rem;letter-spacing:2px;color:var(--text3);text-transform:uppercase;font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border)}
+.player-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);transition:background 0.15s}
+.player-row:last-child{border-bottom:none}
+.player-row:hover{background:var(--bg3)}
+.p-rank{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--text3);width:20px}
+.p-rank.r1{color:#ffd700}.p-rank.r2{color:#c0c0c0}.p-rank.r3{color:#cd7f32}
+.p-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--text2);flex-shrink:0}
+.p-info{flex:1}
+.p-name{font-weight:700;font-size:0.9rem}
+.p-club{font-size:0.72rem;color:var(--text3);display:flex;align-items:center;gap:4px}
+.p-clogo{width:14px;height:14px;object-fit:contain}
+.p-val{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--green)}
+
+.fixture-day{margin-bottom:20px}
+.day-hdr{font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:3px;color:var(--text3);text-transform:uppercase;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:8px}
+
+.search-wrap{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;margin-bottom:16px;transition:border-color 0.2s}
+.search-wrap:focus-within{border-color:var(--green)}
+.search-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:600}
+.search-wrap input::placeholder{color:var(--text3)}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+@media(max-width:600px){
+  .st-header,.st-row{grid-template-columns:28px 1fr 28px 28px 40px 42px}
+  .st-header>*:nth-child(4),.st-row>*:nth-child(4){display:none}
+  .tname{font-size:0.82rem}
+  .score-num{font-size:1.6rem;letter-spacing:5px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="live-dot"></div>FOOTBALL HUB</div>
+  <div class="clock" id="clock"></div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('live',this)">⚡ Live</button>
+  <button class="tab" onclick="showTab('standings',this)">🏆 Ҷадвал</button>
+  <button class="tab" onclick="showTab('fixtures',this)">📅 Тақвим</button>
+  <button class="tab" onclick="showTab('players',this)">📊 Голзанон</button>
+</nav>
+
+<main>
+
+<div class="section active" id="tab-live">
+  <div class="sec-title">⚡ Натиҷаҳои Зинда</div>
+  <div class="pills">
+    <button class="pill active" onclick="liveFilter('all',this)">🌍 Ҳама</button>
+    <button class="pill" onclick="liveFilter('PL',this)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    <button class="pill" onclick="liveFilter('PD',this)">🇪🇸 La Liga</button>
+    <button class="pill" onclick="liveFilter('SA',this)">🇮🇹 Serie A</button>
+    <button class="pill" onclick="liveFilter('BL1',this)">🇩🇪 Bundesliga</button>
+    <button class="pill" onclick="liveFilter('FL1',this)">🇫🇷 Ligue 1</button>
+    <button class="pill" onclick="liveFilter('CL',this)">⭐ UCL</button>
+  </div>
+  <div id="live-container"><div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div></div>
+</div>
+
+<div class="section" id="tab-standings">
+  <div class="sec-title">🏆 Ҷадвали Лига</div>
+  <div class="pills">
+    <button class="pill active" onclick="loadStandings('PL',this)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    <button class="pill" onclick="loadStandings('PD',this)">🇪🇸 La Liga</button>
+    <button class="pill" onclick="loadStandings('SA',this)">🇮🇹 Serie A</button>
+    <button class="pill" onclick="loadStandings('BL1',this)">🇩🇪 Bundesliga</button>
+    <button class="pill" onclick="loadStandings('FL1',this)">🇫🇷 Ligue 1</button>
+  </div>
+  <div id="standings-container"><div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div></div>
+  <div style="display:flex;gap:14px;margin-top:10px;font-size:0.72rem;color:var(--text3);flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--green);border-radius:1px;display:inline-block"></span>Champions League</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--blue);border-radius:1px;display:inline-block"></span>Europa League</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--yellow);border-radius:1px;display:inline-block"></span>Conference League</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--red);border-radius:1px;display:inline-block"></span>Relegation</span>
+  </div>
+</div>
+
+<div class="section" id="tab-fixtures">
+  <div class="sec-title">📅 Тақвими Бозиҳо</div>
+  <div class="pills">
+    <button class="pill active" onclick="loadFixtures('PL',this)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    <button class="pill" onclick="loadFixtures('PD',this)">🇪🇸 La Liga</button>
+    <button class="pill" onclick="loadFixtures('SA',this)">🇮🇹 Serie A</button>
+    <button class="pill" onclick="loadFixtures('BL1',this)">🇩🇪 Bundesliga</button>
+    <button class="pill" onclick="loadFixtures('FL1',this)">🇫🇷 Ligue 1</button>
+    <button class="pill" onclick="loadFixtures('CL',this)">⭐ UCL</button>
+  </div>
+  <div id="fixtures-container"><div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div></div>
+</div>
+
+<div class="section" id="tab-players">
+  <div class="sec-title">📊 Беҳтарин Голзанон</div>
+  <div class="search-wrap">
+    <span style="color:var(--text3)">🔍</span>
+    <input type="text" placeholder="Ҷустуҷӯи бозигар..." oninput="searchPlayer(this.value)"/>
+  </div>
+  <div class="pills">
+    <button class="pill active" onclick="loadScorers('PL',this)">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    <button class="pill" onclick="loadScorers('PD',this)">🇪🇸 La Liga</button>
+    <button class="pill" onclick="loadScorers('SA',this)">🇮🇹 Serie A</button>
+    <button class="pill" onclick="loadScorers('BL1',this)">🇩🇪 Bundesliga</button>
+    <button class="pill" onclick="loadScorers('FL1',this)">🇫🇷 Ligue 1</button>
+  </div>
+  <div id="players-container"><div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div></div>
+</div>
+
+</main>
+
+<script>
+// Backend URL - replace with your Render.com URL after deploy
+const BACKEND = window.location.origin;
+
+const cache = {};
+async function api(path) {
+  if (cache[path]) return cache[path];
+  const r = await fetch(`${BACKEND}/api/${path}`);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const d = await r.json();
+  cache[path] = d;
+  return d;
+}
+
+// CLOCK
+setInterval(() => {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}, 1000);
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setPills(tabId, btn) {
+  document.querySelectorAll('#'+tabId+' .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function tLogo(url, name) {
+  const fb = `<div class="tlogo-fb">${(name||'?')[0]}</div>`;
+  if (!url) return fb;
+  return `<img class="tlogo" src="${url}" alt="${name}" onerror="this.outerHTML='${fb}'">`;
+}
+
+function stLogo(url, name) {
+  if (!url) return `<span style="font-size:0.8rem">${(name||'?')[0]}</span>`;
+  return `<img class="st-logo" src="${url}" alt="${name}" onerror="this.outerHTML='<span style=\\'font-size:0.8rem\\'>${(name||'?')[0]}</span>'">`;
+}
+
+// ====== LIVE ======
+let allLive = [], liveLeague = 'all';
+
+async function loadLive() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    let data = await api(`matches?status=IN_PLAY,PAUSED,HALFTIME`);
+    allLive = data.matches || [];
+    if (!allLive.length) {
+      data = await api(`matches?dateFrom=${today}&dateTo=${today}`);
+      allLive = data.matches || [];
+    }
+    renderLive();
+  } catch(e) {
+    document.getElementById('live-container').innerHTML =
+      `<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+}
+
+function renderLive() {
+  const c = document.getElementById('live-container');
+  const list = liveLeague==='all' ? allLive
+    : allLive.filter(m=>m.competition?.code===liveLeague);
+
+  if (!list.length) {
+    c.innerHTML=`<div class="loading" style="padding:40px"><div style="font-size:2.5rem">😴</div><div class="loading-text">ЗИНДА БОЗИЕ НЕСТ ҲОЗИР</div></div>`;
+    return;
+  }
+
+  c.innerHTML = list.map(m=>{
+    const home=m.homeTeam||{}, away=m.awayTeam||{};
+    const s=m.score?.fullTime||{};
+    const sh=s.home??'?', sa=s.away??'?';
+    const status=m.status||'';
+    const comp=m.competition?.name||'';
+
+    let cls='upcoming', badge='', badgeCls='upcoming';
+    if(['IN_PLAY','PAUSED','HALFTIME'].includes(status)){
+      cls='live'; badge=`● LIVE`; badgeCls='live';
+    } else if(status==='FINISHED'){
+      cls='finished'; badge='ТАМОМ'; badgeCls='finished';
+    } else {
+      const t=m.utcDate?new Date(m.utcDate).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'--:--';
+      badge=t;
+    }
+
+    const scoreHTML = cls==='upcoming'
+      ? `<div class="score-num" style="font-size:1rem;letter-spacing:2px;color:var(--green)">${badge}</div>`
+      : `<div class="score-num">${sh} - ${sa}</div><div class="mbadge ${badgeCls}">${badge}</div>`;
+
+    return `
+    <div class="match-card ${cls}">
+      <div class="league-tag">${comp}</div>
+      <div class="team-side">${tLogo(home.crest,home.name)}<div class="tname">${home.shortName||home.name||'Хона'}</div></div>
+      <div class="score-mid">${scoreHTML}</div>
+      <div class="team-side away"><div class="tname">${away.shortName||away.name||'Меҳмон'}</div>${tLogo(away.crest,away.name)}</div>
+    </div>`;
+  }).join('');
+}
+
+function liveFilter(code, btn) {
+  setPills('tab-live', btn);
+  liveLeague=code;
+  renderLive();
+}
+
+// ====== STANDINGS ======
+async function loadStandings(code, btn) {
+  setPills('tab-standings', btn);
+  const c=document.getElementById('standings-container');
+  c.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div>`;
+  try {
+    const data=await api(`competitions/${code}/standings`);
+    const table=data.standings?.[0]?.table||[];
+    const total=table.length;
+    c.innerHTML=`
+    <div class="standings-wrap">
+      <div class="st-header"><span>#</span><span>Клуб</span><span style="text-align:center">Б</span><span style="text-align:center">Г</span><span style="text-align:center">М</span><span style="text-align:center">ФА</span><span style="text-align:center">Балл</span></div>
+      ${table.map((t,i)=>{
+        let z='';
+        if(i<4)z='cl'; else if(i===4)z='el'; else if(i===5)z='conf'; else if(i>=total-3)z='rel';
+        const tm=t.team||{};
+        return `
+        <div class="st-row ${z}">
+          <span class="st-pos">${t.position}</span>
+          <div class="st-team">${stLogo(tm.crest,tm.name)}<span class="st-name">${tm.shortName||tm.name||'Клуб'}</span></div>
+          <span class="st-stat">${t.playedGames}</span>
+          <span class="st-stat">${t.won}</span>
+          <span class="st-stat">${t.lost}</span>
+          <span class="st-stat">${t.goalDifference>0?'+':''}${t.goalDifference}</span>
+          <span class="st-pts">${t.points}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } catch(e) {
+    c.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+}
+
+// ====== FIXTURES ======
+async function loadFixtures(code, btn) {
+  setPills('tab-fixtures', btn);
+  const c=document.getElementById('fixtures-container');
+  c.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div>`;
+  try {
+    const from=new Date().toISOString().split('T')[0];
+    const to=new Date(Date.now()+14*864e5).toISOString().split('T')[0];
+    const data=await api(`competitions/${code}/matches?dateFrom=${from}&dateTo=${to}&status=SCHEDULED,TIMED`);
+    const matches=data.matches||[];
+    if(!matches.length){
+      c.innerHTML=`<div class="loading" style="padding:40px"><div style="font-size:2rem">📭</div><div class="loading-text">БОЗИИ НАЗДИК НЕСТ</div></div>`;
+      return;
+    }
+    const grouped={};
+    matches.forEach(m=>{
+      const d=new Date(m.utcDate).toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+      if(!grouped[d])grouped[d]=[];
+      grouped[d].push(m);
+    });
+    c.innerHTML=Object.entries(grouped).map(([date,ms])=>`
+      <div class="fixture-day">
+        <div class="day-hdr">${date}</div>
+        ${ms.map(m=>{
+          const home=m.homeTeam||{},away=m.awayTeam||{};
+          const time=new Date(m.utcDate).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+          return `
+          <div class="match-card upcoming" style="margin-bottom:6px">
+            <div class="team-side">${tLogo(home.crest,home.name)}<div class="tname">${home.shortName||home.name||'Хона'}</div></div>
+            <div class="score-mid"><div class="score-num" style="font-size:1rem;letter-spacing:2px;color:var(--green)">${time}</div><div class="mbadge upcoming">ПЕШ</div></div>
+            <div class="team-side away"><div class="tname">${away.shortName||away.name||'Меҳмон'}</div>${tLogo(away.crest,away.name)}</div>
+          </div>`;
+        }).join('')}
+      </div>`).join('');
+  } catch(e) {
+    c.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+}
+
+// ====== SCORERS ======
+let scorersData=[];
+
+async function loadScorers(code, btn) {
+  setPills('tab-players', btn);
+  const c=document.getElementById('players-container');
+  c.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">ЮКЛОНИДАН...</div></div>`;
+  try {
+    const data=await api(`competitions/${code}/scorers?limit=20`);
+    scorersData=data.scorers||[];
+    renderScorers(scorersData);
+  } catch(e) {
+    c.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+}
+
+function renderScorers(list) {
+  const c=document.getElementById('players-container');
+  if(!list.length){c.innerHTML=`<div class="error-box">Маълумот нест</div>`;return;}
+  const initials=name=>(name||'?').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  c.innerHTML=`
+  <div class="players-grid">
+    <div class="player-card" style="grid-column:1/-1">
+      <div class="pcard-head">⚽ БЕҲТАРИН ГОЛЗАНОН</div>
+      ${list.map((item,i)=>{
+        const p=item.player||{};
+        const tm=item.team||{};
+        const rc=['r1','r2','r3'][i]||'';
+        return `
+        <div class="player-row">
+          <div class="p-rank ${rc}">${i+1}</div>
+          <div class="p-avatar">${initials(p.name)}</div>
+          <div class="p-info">
+            <div class="p-name">${p.name||'Номаълум'}</div>
+            <div class="p-club">
+              ${tm.crest?`<img class="p-clogo" src="${tm.crest}" onerror="this.remove()">`:''} 
+              ${tm.shortName||tm.name||''}
+              <span style="margin-left:4px;opacity:0.5">${p.nationality||''}</span>
+            </div>
+          </div>
+          <div class="p-val">${item.goals||0}<span style="font-size:0.65rem;color:var(--text3);font-family:'Rajdhani'"> гол</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function searchPlayer(q) {
+  if(!q.trim()){renderScorers(scorersData);return;}
+  renderScorers(scorersData.filter(item=>(item.player?.name||'').toLowerCase().includes(q.toLowerCase())));
+}
+
+// INIT
+loadLive();
+loadStandings('PL', document.querySelector('#tab-standings .pill'));
+loadFixtures('PL', document.querySelector('#tab-fixtures .pill'));
+loadScorers('PL', document.querySelector('#tab-players .pill'));
+</script>
+</body>
+</html>
